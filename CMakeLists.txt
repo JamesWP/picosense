@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.12)
 
 set(PICO_SDK_PATH "${PICO_SDK_PATH}" CACHE PATH "Path to the Raspberry Pi Pico SDK")
 set(PICO_SDK_INIT_CMAKE_FILE ${PICO_SDK_PATH}/pico_sdk_init.cmake)
+
+set(MQTT_SERVER_IP CACHE STRING "IP to connect to")
+
 include(${PICO_SDK_INIT_CMAKE_FILE})
 
 project(picosense C CXX ASM)
@@ -14,7 +17,10 @@ pico_sdk_init()
 
 add_executable(picosense picosense.c)
 
-target_link_libraries(picosense PRIVATE 
+target_include_directories(picosense PRIVATE ${CMAKE_SOURCE_DIR})
+
+target_link_libraries(picosense PRIVATE
+    pico_lwip_mqtt
     pico_cyw43_arch_lwip_threadsafe_background
     pico_stdlib)
 
