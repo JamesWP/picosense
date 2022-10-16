@@ -2,15 +2,19 @@
 #include <time.h>
 
 #include <lwip/apps/mqtt.h>
+#include <lwip/debug.h>
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
 
 #include <hardware/adc.h>
 
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
+
+#ifdef MQTT_SUBSCRIBE
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len);
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags);
 static void mqtt_sub_request_cb(void *arg, err_t result);
+#endif
 
 void run_mqtt(mqtt_client_t* client) {
     ip_addr_t ip_addr; // = IPADDR4_INIT_BYTES(MQTT_SERVER_IP);
@@ -49,11 +53,13 @@ void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status
   if(status == MQTT_CONNECT_ACCEPTED) {
     printf("mqtt_connection_cb: Successfully connected\n");
     
+#ifdef MQTT_SUBSCRIBE
     /* Setup callback for incoming publish requests */
     mqtt_set_inpub_callback(client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, arg);
     
     /* Subscribe to a topic named "subtopic" with QoS level 1, call mqtt_sub_request_cb with result */ 
     err = mqtt_subscribe(client, "subtopic", 1, mqtt_sub_request_cb, arg);
+#endif
 
     if(err != ERR_OK) {
       printf("mqtt_subscribe return: %hhx\n", err);
@@ -63,6 +69,7 @@ void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status
   }  
 }
 
+#ifdef MQTT_SUBSCRIBE
 void mqtt_sub_request_cb(void *arg, err_t result)
 {
   /* Just print the result code here for simplicity, 
@@ -116,7 +123,11 @@ void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
     /* Handle fragmented payload, store in buffer, write to file or whatever */
   }
 }
+#endif
 
+void publish_cb(void *arg, err_t err) {
+    printf("Publish result: %d\n", err);
+}
 
 int main(int argc, const char* argv[]){
     stdio_init_all();
@@ -137,20 +148,38 @@ int main(int argc, const char* argv[]){
 
     mqtt_client_t *client = mqtt_client_new();
 
-    //run_mqtt(client);
+    run_mqtt(client);
 
     adc_init();
-    //adc_gpio_init(26);
     adc_set_temp_sensor_enabled(true);
     adc_select_input(4);
     const float conversion_factor = 3.3f / (1 << 12);
-         
+        
+    const int update_frequency_ms = 10 * 1000;
+    absolute_time_t next_update = make_timeout_time_ms(update_frequency_ms); 
+
+    // TODO add watchdog
+
+    #define BUFF_LEN 100
+    char buff[BUFF_LEN] = {0};
+
     while (true) {
-//        printf("Done!\n");
-        float result = adc_read() * conversion_factor;
-        float temperature = 27 - (result - 0.706)/0.001721;
-        printf("Temp %f\n", temperature);
-         
+        if (time_reached(next_update) && mqtt_client_is_connected(client)) {
+            float result = adc_read() * conversion_factor;
+            float temperature = 27 - (result - 0.706)/0.001721;
+            printf("Temp %f\n", temperature);
+
+            int length = snprintf(buff, BUFF_LEN, "%.2f", temperature); 
+
+            next_update = make_timeout_time_ms(update_frequency_ms);
+
+            err_t err = mqtt_publish(client, "pico/temperature", buff, length, 0, 1, publish_cb, NULL);
+            
+            if(err != ERR_OK) {
+                printf("mqtt_subscribe return: %hhx\n", err);
+            }
+        }
+
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         sleep_ms(1000);
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
