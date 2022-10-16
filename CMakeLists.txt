@@ -22,7 +22,9 @@ target_include_directories(picosense PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(picosense PRIVATE
     pico_lwip_mqtt
     pico_cyw43_arch_lwip_threadsafe_background
-    pico_stdlib)
+    pico_stdlib
+    pico_malloc
+    hardware_adc)
 
 target_compile_definitions(picosense PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"

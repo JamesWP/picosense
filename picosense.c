@@ -5,6 +5,7 @@
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
 
+#include <hardware/adc.h>
 
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len);
@@ -136,11 +137,20 @@ int main(int argc, const char* argv[]){
 
     mqtt_client_t *client = mqtt_client_new();
 
-    run_mqtt(client);
+    //run_mqtt(client);
 
-
+    adc_init();
+    //adc_gpio_init(26);
+    adc_set_temp_sensor_enabled(true);
+    adc_select_input(4);
+    const float conversion_factor = 3.3f / (1 << 12);
+         
     while (true) {
 //        printf("Done!\n");
+        float result = adc_read() * conversion_factor;
+        float temperature = 27 - (result - 0.706)/0.001721;
+        printf("Temp %f\n", temperature);
+         
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
         sleep_ms(1000);
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
