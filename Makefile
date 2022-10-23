@@ -1,8 +1,10 @@
 .PHONY: reload build
 
+CMAKE=cmake
+
 build:
 	echo "Remaking application"
-	$(MAKE) -C build
+	$(CMAKE) --build build
 	
 reload: build
 	@echo "Loading application to device"

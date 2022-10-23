@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the SDK
 pico_sdk_init()
 
-add_executable(picosense picosense.c)
+add_executable(picosense picosense.c sensor_reporter.c sensor_reader.c)
 
 target_include_directories(picosense PRIVATE ${CMAKE_SOURCE_DIR})
 
@@ -24,7 +24,7 @@ target_link_libraries(picosense PRIVATE
     pico_cyw43_arch_lwip_threadsafe_background
     pico_stdlib
     pico_malloc
-    hardware_adc)
+    hardware_i2c)
 
 target_compile_definitions(picosense PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"
