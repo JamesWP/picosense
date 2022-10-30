@@ -2,6 +2,7 @@
 
 #include <lwip/apps/mqtt.h>
 #include <lwip/debug.h>
+#include <pico/platform.h>
 
 static mqtt_client_t *client;
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
@@ -21,13 +22,13 @@ void report_sensor_values(sensor_values_t *values)
     int length;
     err_t err;
 
-    length = snprintf(buff, BUFF_LEN, "%.2f C", values->temperature_celcius);
+    length = snprintf(buff, BUFF_LEN, "%.2f", values->temperature_celcius);
     err = mqtt_publish(client, "pico/temperature", buff, length, 0, 1, publish_cb, NULL);
 
-    length = snprintf(buff, BUFF_LEN, "%.2f kPa", values->pressure_kPa);
+    length = snprintf(buff, BUFF_LEN, "%.2f", values->pressure_kPa);
     err = mqtt_publish(client, "pico/pressure", buff, length, 0, 1, publish_cb, NULL);
 
-    length = snprintf(buff, BUFF_LEN, "%.2f %%", values->humidity_rel);
+    length = snprintf(buff, BUFF_LEN, "%.2f", values->humidity_rel);
     err = mqtt_publish(client, "pico/humidity", buff, length, 0, 1, publish_cb, NULL);
 
     if (err != ERR_OK)
@@ -43,8 +44,11 @@ void init_sensor_reporter()
 }
 
 void mqtt_connect() {
-    ip_addr_t ip_addr; // = IPADDR4_INIT_BYTES(MQTT_SERVER_IP);
-    IP4_ADDR(&ip_addr, 192, 168, 178, 27);
+    ip_addr_t ip_addr = IPADDR4_INIT(0x00000000);
+    if (1 != ip4addr_aton(MQTT_SERVER_IP, &ip_addr)) {
+        printf("Invalid ipv4 address given in MQTT_SERVER_IP: %s\n", MQTT_SERVER_IP);
+        panic("Bad ip");
+    } 
 
     struct mqtt_connect_client_info_t ci = {0};
 
