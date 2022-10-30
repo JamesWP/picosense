@@ -6,6 +6,7 @@
 static mqtt_client_t *client;
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 static void publish_cb(void *arg, err_t err);
+void mqtt_connect();
 
 #define BUFF_LEN 100
 static char buff[BUFF_LEN] = {0};
@@ -38,7 +39,10 @@ void report_sensor_values(sensor_values_t *values)
 void init_sensor_reporter()
 {
     client = mqtt_client_new();
+    mqtt_connect();
+}
 
+void mqtt_connect() {
     ip_addr_t ip_addr; // = IPADDR4_INIT_BYTES(MQTT_SERVER_IP);
     IP4_ADDR(&ip_addr, 192, 168, 178, 27);
 
@@ -70,6 +74,7 @@ void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status
     else
     {
         printf("mqtt_connection_cb: Disconnected, reason: %d\n", status);
+	mqtt_connect();
     }
 }
 
