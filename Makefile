@@ -1,4 +1,4 @@
-.PHONY: reload build
+.PHONY: reload build watch
 
 CMAKE=cmake
 
@@ -12,6 +12,8 @@ reload: build
 	echo "Allowing device to restart"
 	sleep 2
 	echo "Assuming device has restarted"
-	echo "Reading messages from serial output"
-	cat /dev/ttyACM0
+	$(MAKE) watch
 
+watch:
+	echo "Reading messages from serial output"
+	bash -c "cat /dev/ttyACM0 | tee -a traces/$$(date +'%Y.%d.%m').$$$$.log"

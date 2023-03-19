@@ -37,6 +37,7 @@ int main(int argc, const char *argv[])
 
   while (true)
   {
+  #if 1
     if (time_reached(next_update))
     {
       sensor_values_t values = {0};
@@ -54,6 +55,7 @@ int main(int argc, const char *argv[])
 
       next_update = make_timeout_time_ms(update_frequency_ms);
     }
+  #endif
 
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
     sleep_ms(1000);
