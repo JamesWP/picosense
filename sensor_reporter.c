@@ -3,6 +3,7 @@
 #include <lwip/apps/mqtt.h>
 #include <lwip/debug.h>
 #include <pico/platform.h>
+#include <cyw43.h>
 
 static mqtt_client_t *client;
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
@@ -21,8 +22,15 @@ void* cookie(int datapoint_number, int datapoint_type) {
     int a = datapoint_number & datapoint_NUM_MASK;
     return (void*)(a | datapoint_type);
 }
+void report_sensor_values_impl(sensor_values_t *values);
+void report_sensor_values(sensor_values_t *values) 
+{
+    cyw43_arch_lwip_begin();
+    report_sensor_values_impl(values);
+    cyw43_arch_lwip_end();
+}
 
-void report_sensor_values(sensor_values_t *values)
+void report_sensor_values_impl(sensor_values_t *values)
 {
     if (!mqtt_client_is_connected(client))
     {
@@ -71,6 +79,7 @@ void init_sensor_reporter()
 }
 
 void mqtt_connect() {
+    cyw43_arch_lwip_begin();
     ip_addr_t ip_addr = IPADDR4_INIT(0x00000000);
     if (1 != ip4addr_aton(MQTT_SERVER_IP, &ip_addr)) {
         printf("Invalid ipv4 address given in MQTT_SERVER_IP: %s\n", MQTT_SERVER_IP);
@@ -88,6 +97,7 @@ void mqtt_connect() {
     {
         printf("mqtt_connect return %hhx\n", err);
     }
+    cyw43_arch_lwip_end();
 }
 
 void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
