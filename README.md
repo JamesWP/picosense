@@ -13,3 +13,5 @@ $ cmake .. \
         -DMQTT_SERVER_IP=<MQTT_BROKER_IPv4> \
         -DPICO_SDK_PATH=<PATH_TO_pico-sdk>
 $ cmake --build .
+```
+n.b. `MQTT_BROKER_IPv4` should be in `,` separated format: `192,168,1,1`
