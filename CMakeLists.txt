@@ -15,16 +15,25 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the SDK
 pico_sdk_init()
 
-add_executable(picosense picosense.c sensor_reporter.c sensor_reader.c)
+# defines the display target
+add_subdirectory(lcd)
 
-target_include_directories(picosense PRIVATE ${CMAKE_SOURCE_DIR})
+add_executable(picosense 
+  picosense.c 
+  sensor_reporter.c 
+  sensor_reader.c 
+  ${display_SRCS})
+
+target_include_directories(picosense PRIVATE ${CMAKE_SOURCE_DIR} ${display_DIRS})
 
 target_link_libraries(picosense PRIVATE
     pico_lwip_mqtt
     pico_cyw43_arch_lwip_threadsafe_background
     pico_stdlib
     pico_malloc
-    hardware_i2c)
+    hardware_i2c
+    hardware_spi
+    hardware_pwm)
 
 target_compile_definitions(picosense PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"

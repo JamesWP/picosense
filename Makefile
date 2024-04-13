@@ -5,15 +5,20 @@ CMAKE=cmake
 build:
 	echo "Remaking application"
 	$(CMAKE) --build build
-	
-reload: build
+
+load:
 	@echo "Loading application to device"
 	picotool load -f build/picosense.uf2
 	echo "Allowing device to restart"
 	sleep 2
-	echo "Assuming device has restarted"
-	$(MAKE) watch
+	
+reload:
+	$(MAKE) build
+	$(MAKE) load
 
 watch:
 	echo "Reading messages from serial output"
 	bash -c "cat /dev/ttyACM0 | tee -a traces/$$(date +'%Y.%d.%m').$$$$.log"
+
+minicom:
+	minicom -b 115200 -o -D /dev/ttyACM0 
