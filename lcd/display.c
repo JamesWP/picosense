@@ -40,11 +40,11 @@ void display_data(float temperature, float humidity, float pressure) {
 
   char tbuf[20] = {0};
   snprintf(tbuf, sizeof(tbuf), "Temp: %3.2f C", temperature); 
-  drawstring(buffer, 0, 0, tbuf);
+  drawstring(buffer, 0, 0, 0, tbuf);
   snprintf(tbuf, sizeof(tbuf), "Hum:  %3.2f kPa", temperature); 
-  drawstring(buffer, 0, 3, tbuf);
+  drawstring(buffer, 0, 0, 3, tbuf);
   snprintf(tbuf, sizeof(tbuf), "Pres: %3.2f %%", temperature); 
-  drawstring(buffer, 0, 6, tbuf);
+  drawstring(buffer, 0, 0, 6, tbuf);
  
   write_buffer(buffer); 
 }

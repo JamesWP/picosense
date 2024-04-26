@@ -1,3 +1,4 @@
 build
 .vscode/settings.json
 traces/*.log
+test_build

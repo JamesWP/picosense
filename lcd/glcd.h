@@ -1,7 +1,7 @@
-#include "pico/stdlib.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define LCDWIDTH 128
 #define LCDHEIGHT 64
@@ -25,8 +25,8 @@ void drawline(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
 
 void drawbitmap(uint8_t *buff, uint8_t x, uint8_t y, const uint8_t *bitmap,
                 uint8_t w, uint8_t h, uint8_t color);
-void drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c);
-void drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c);
+void drawchar(uint8_t *buff, size_t font, uint8_t x, uint8_t line, uint8_t c);
+void drawstring(uint8_t *buff, size_t font, uint8_t x, uint8_t line, uint8_t *c);
 
 void drawcircle(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t r,
                 uint8_t color);

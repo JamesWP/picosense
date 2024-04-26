@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "glcd.h"
-
-extern uint8_t font[];
+#include <lcd/fonts.h>
+#include <stdbool.h>
 
 // the most basic function, set a single pixel
 void setpixel(uint8_t *buff, uint8_t x, uint8_t y, uint8_t color) {
@@ -47,25 +47,61 @@ void drawbitmap(uint8_t *buff, uint8_t x, uint8_t y, const uint8_t *bitmap,
   }
 }
 
-void drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c) {
+void drawstring(uint8_t *buff, size_t font, uint8_t x, uint8_t line, uint8_t *c) {
   while (c[0] != 0) {
-    drawchar(buff, x, line, c[0]);
+    drawchar(buff, font, x, line, c[0]);
     c++;
-    x += 6; // 6 pixels wide
-    if (x + 6 >= LCDWIDTH) {
+    x += font_glyph_width(font); // 6 pixels wide
+    if (x + font_glyph_width(font) >= LCDWIDTH) {
       x = 0; // ran out of this line
-      line++;
+      line+= font_glyph_height(font);
     }
-    if (line >= (LCDHEIGHT / 8))
+    if (line >= LCDHEIGHT)
       return; // ran out of space :(
   }
 }
 
-void drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c) {
-  for (uint8_t i = 0; i < 5; i++) {
-    //buff[x + (line * 128)] = pgm_read_byte(font + (c * 5) + i);
-    buff[x + (line * 128)] = font[(c * 5) + i];
-    x++;
+void drawchar(uint8_t *buff, size_t font, uint8_t x, uint8_t line, uint8_t c) {
+  int glyphs_per_row = font_width(font) / font_glyph_width(font);
+  int bytes_per_row = font_width(font) >> 3;
+  int glyph_row = c / glyphs_per_row;
+  int glyph_col = c % glyphs_per_row;
+  int glyph_x = glyph_col * font_glyph_width(font);
+  int glyph_y = glyph_row * font_glyph_height(font);
+  int glyph_col_byte_start = glyph_x >> 3;
+  int glyph_col_byte_end = (font_glyph_width(font)+glyph_x+7) >> 3;
+  int glyph_row_byte_start = glyph_y * bytes_per_row;
+  int glyph_row_byte_end = (glyph_y + font_glyph_height(font)) * bytes_per_row;
+  const char* data = font_data(font);
+
+  printf("Testing: gpr: %d\n", glyphs_per_row);
+  printf("Testing: bpr: %d\n", bytes_per_row);
+  printf("Testing: gr: %d\n", glyph_row);
+  printf("Testing: gc: %d\n", glyph_col);
+
+  printf("Testing: gx,gy: %d, %d\n", glyph_x, glyph_y);
+  printf("Testing: col start,end: %d, %d\n", glyph_col_byte_start, glyph_col_byte_end);
+  printf("Testing: row start,end: %d, %d\n", glyph_row_byte_start, glyph_row_byte_end);
+
+  int starting_x = x;
+
+  for (int glyph_row_byte = glyph_row_byte_start; glyph_row_byte < glyph_row_byte_end; glyph_row_byte+=bytes_per_row) {
+    for(int glyph_col_byte = glyph_col_byte_start; glyph_col_byte < glyph_col_byte_end; glyph_col_byte++) {
+      int byte = glyph_row_byte + glyph_col_byte;
+      int byte_pix_col = glyph_col_byte << 3;
+      char colors = data[byte];
+      for(int i = byte_pix_col; i < byte_pix_col+8; i++, colors >>= 1){
+        if (i < glyph_x) continue;
+        if (i >= glyph_x+font_glyph_width(font)) continue;
+        int color = colors&1;
+        //int color = 1;
+        //printf("Testing x,line = color: %d, %d = %d\n", x, line, color);
+        setpixel(buff, x, line, color);
+        x++;
+      }
+    }
+    line++;
+    x = starting_x;
   }
 }
 

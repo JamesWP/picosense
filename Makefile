@@ -1,4 +1,4 @@
-.PHONY: reload build watch
+.PHONY: reload build watch test
 
 CMAKE=cmake
 
@@ -22,3 +22,14 @@ watch:
 
 minicom:
 	minicom -b 115200 -o -D /dev/ttyACM0 
+
+
+test_build/Makefile: lcd/CMakeLists.txt
+	mkdir -p test_build
+	$(CMAKE) -B test_build -DIS_TESTING=Y -DCMAKE_BUILD_TYPE=Debug lcd 
+
+
+test: test_build/Makefile
+	${CMAKE} --build test_build
+	test_build/test_display
+	
