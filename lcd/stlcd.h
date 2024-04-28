@@ -1,5 +1,7 @@
-#include "pico/stdlib.h"
-#include "hardware/spi.h"
+#ifndef STLCD
+#define STLCD
+
+#include <stdint.h>
 
 #define CMD_DISPLAY_OFF 0xAE
 #define CMD_DISPLAY_ON 0xAF
@@ -40,6 +42,7 @@
 #define CMD_NOP 0xE3
 #define CMD_TEST 0xF0
 
+
 void spiwrite(uint8_t c);
 
 void setup(void);
@@ -53,3 +56,5 @@ void st7565_set_brightness(uint8_t val);
 void clear_screen(void);
 void clear_buffer(uint8_t *buffer);
 void write_buffer(uint8_t *buffer);
+
+#endif

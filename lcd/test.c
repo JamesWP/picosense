@@ -4,18 +4,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 #include <stdbool.h>
-
-uint8_t buffer[128 * 64 / 8] = {0};
+#include <lcd/display.h>
 
 uint8_t png_buffer[128 * 64 * 3 * 4] = {0};
 
-// the most basic function, set a single pixel
-bool getpixel(uint8_t *buff, uint32_t x, uint32_t y) {
-  if ((x >= LCDWIDTH) || (y >= LCDHEIGHT))
-    return false;
-
-  return buff[x + (y / 8) * 128] & _BV(7 - (y % 8));
-}
 
 void setpng_pixel(uint8_t *buff, uint32_t x, uint32_t y) {
   x *= 2;
@@ -30,22 +22,24 @@ void setpng_pixel(uint8_t *buff, uint32_t x, uint32_t y) {
   }
 }
 
-void convert(uint8_t *buff, uint8_t *png_buff) {
+void convert(uint8_t *png_buff) {
   for (int y = 0; y < 64; y++) {
     for (int x = 0; x < 128; x++) {
-      if (getpixel(buff, x, y)) {
+      if (display_getpixel(x, y)) {
         setpng_pixel(png_buff, x, y);
       }
     }
   }
 }
 
+void write_buffer(uint8_t *buff) {}
+void clear_screen(uint8_t *buff) {}
+
 int main() {
 
-  //drawline(buffer, 10, 10, 76, 23, 1);
-  drawstring(buffer, 1, 0, 0, "HELLO WORLD! Caroline is the best wife");
+  display_data(12.3, 45.6, 78.9);
 
-  convert(buffer, png_buffer);
+  convert(png_buffer);
   const char *file = "output.png";
   stbi_write_png(file, 128 * 2, 64 * 2, 3, png_buffer, 128 * 2 * 3);
 }
