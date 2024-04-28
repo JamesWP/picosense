@@ -43,7 +43,7 @@ void convert(uint8_t *buff, uint8_t *png_buff) {
 int main() {
 
   //drawline(buffer, 10, 10, 76, 23, 1);
-  drawstring(buffer, 0, 30, 10, "HELLO WORLD!");
+  drawstring(buffer, 1, 0, 0, "HELLO WORLD! Caroline is the best wife");
 
   convert(buffer, png_buffer);
   const char *file = "output.png";

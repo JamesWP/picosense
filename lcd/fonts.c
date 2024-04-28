@@ -6,11 +6,15 @@
 // xbm files don't end with ;? might be a bug in generator
 ;
 
-int font_widths[] = {Font7x13_width};
-int font_heights[] = {Font7x13_height};
-int font_glyph_heights[] = {Font7x13_glyph_h};
-int font_glyph_widths[] = {Font7x13_glyph_w};
-char* font_datas[] = {Font7x13_bits};
+#include <lcd/font-10x20.xbm>
+// xbm files don't end with ;? might be a bug in generator
+;
+
+int font_widths[] = {Font7x13_width, Font10x20_width};
+int font_heights[] = {Font7x13_height, Font10x20_height};
+int font_glyph_heights[] = {Font7x13_glyph_h, Font10x20_glyph_h};
+int font_glyph_widths[] = {Font7x13_glyph_w, Font10x20_glyph_w};
+char* font_datas[] = {Font7x13_bits, Font10x20_bits};
 
 
 int font_width(size_t font) { return font_widths[font]; }
