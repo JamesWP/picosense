@@ -40,7 +40,10 @@ target_compile_definitions(picosense PRIVATE
     WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
     MQTT_SERVER_IP=\"${MQTT_SERVER_IP}\"
     PICO_SDK=1
-    ST7565=1)
+    ST7565=1
+    CAN_SENSE=1
+    CAN_REPORT=1
+    CAN_DISPLAY=1)
 
 pico_enable_stdio_usb(picosense 1)
 pico_enable_stdio_uart(picosense 0)

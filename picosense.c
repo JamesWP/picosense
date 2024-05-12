@@ -40,7 +40,11 @@ int main(int argc, const char *argv[])
   const int update_frequency_ms = 10 * 1000;
   absolute_time_t next_update = make_timeout_time_ms(0);
 
+  unsigned int total_failures = 0;
+
+#if CAN_DISPLAY
   init_display();
+#endif
 
   // TODO add watchdog
 
@@ -49,25 +53,35 @@ int main(int argc, const char *argv[])
     if (time_reached(next_update))
     {
       sensor_values_t values = {0};
+      reporting_status_t status = {0};
 
-      #if CAN_SENSE
+#if CAN_SENSE
       if (!read_sensor_values(&values))
       {
         continue;
       }
-      #endif
+#endif
 
       printf("Temp     %.2f C\n", values.temperature_celcius);
       printf("Pressure %.2f kPa\n", values.pressure_kPa);
       printf("Humidity %.2f %%\n", values.humidity_rel);
 
-      display_data(values.temperature_celcius, 
-                   values.pressure_kPa, 
-                   values.humidity_rel);
+#if CAN_REPORT
+      report_sensor_values(&values, &status);
+#endif
 
-      #if CAN_REPORT
-      report_sensor_values(&values);
-      #endif
+      if (!status.is_publish_success)
+      {
+        total_failures++;
+      }
+
+#if CAN_DISPLAY
+      display_data(values.temperature_celcius,
+                   values.humidity_rel,
+                   values.pressure_kPa);
+
+      display_status(status.is_wifi_connected, status.is_mqtt_connected, status.is_publish_success, status.wifi_state, total_failures);
+#endif
 
       next_update = make_timeout_time_ms(update_frequency_ms);
     }

@@ -37,7 +37,8 @@ void clear_screen(uint8_t *buff) {}
 
 int main() {
 
-  display_data(12.3, 45.6, 78.9);
+  display_data(122.3, 5.6, 78.9);
+  display_status(true, false, true, "JP", 123);
 
   convert(png_buffer);
   const char *file = "output.png";

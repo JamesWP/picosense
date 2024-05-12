@@ -3,18 +3,22 @@
 #include <stddef.h>
 
 #include <lcd/font-7x13.xbm>
-// xbm files don't end with ;? might be a bug in generator
+// these xbm files don't end with ;? might be a bug in generator
 ;
 
 #include <lcd/font-10x20.xbm>
-// xbm files don't end with ;? might be a bug in generator
+// these xbm files don't end with ;? might be a bug in generator
 ;
 
-int font_widths[] = {Font7x13_width, Font10x20_width};
-int font_heights[] = {Font7x13_height, Font10x20_height};
-int font_glyph_heights[] = {Font7x13_glyph_h, Font10x20_glyph_h};
-int font_glyph_widths[] = {Font7x13_glyph_w, Font10x20_glyph_w};
-char* font_datas[] = {Font7x13_bits, Font10x20_bits};
+#include <lcd/robo-70.xbm>
+// these xbm files don't end with ;? might be a bug in generator
+;
+
+int font_widths[] = {Font7x13_width, Font10x20_width, ROBO_width};
+int font_heights[] = {Font7x13_height, Font10x20_height, ROBO_height};
+int font_glyph_heights[] = {Font7x13_glyph_h, Font10x20_glyph_h, ROBO_glyph_h};
+int font_glyph_widths[] = {Font7x13_glyph_w, Font10x20_glyph_w, ROBO_glyph_w};
+char* font_datas[] = {Font7x13_bits, Font10x20_bits, ROBO_bits};
 
 
 int font_width(size_t font) { return font_widths[font]; }

@@ -18,25 +18,67 @@ static int datapoint_HUM=0x20000000;
 static int datapoint_PRES=0x30000000;
 static int datapoint_NUM_MASK=0x0FFFFFFF;
 
+static bool has_failed = false;
+
 void* cookie(int datapoint_number, int datapoint_type) {
     int a = datapoint_number & datapoint_NUM_MASK;
     return (void*)(a | datapoint_type);
 }
-void report_sensor_values_impl(sensor_values_t *values);
-void report_sensor_values(sensor_values_t *values) 
+void report_sensor_values_impl(sensor_values_t *values, reporting_status_t *status);
+void report_sensor_values(sensor_values_t *values, reporting_status_t *status) 
 {
     cyw43_arch_lwip_begin();
-    report_sensor_values_impl(values);
+    report_sensor_values_impl(values, status);
     cyw43_arch_lwip_end();
 }
 
-void report_sensor_values_impl(sensor_values_t *values)
+void report_sensor_values_impl(sensor_values_t *values, reporting_status_t *status)
 {
+
+    int link_status = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+
+    switch (link_status) {
+        case CYW43_LINK_DOWN:
+            sprintf(status->wifi_state, "DW");
+            status->is_wifi_connected = false;
+            break;
+        case CYW43_LINK_JOIN:
+            sprintf(status->wifi_state, "JO");
+            status->is_wifi_connected = true;
+            break;
+        case CYW43_LINK_NOIP:
+            sprintf(status->wifi_state, "NI");
+            status->is_wifi_connected = true;
+            break;
+        case CYW43_LINK_NONET:
+            sprintf(status->wifi_state, "NN");
+            status->is_wifi_connected = false;
+            break;
+        case CYW43_LINK_BADAUTH:
+            sprintf(status->wifi_state, "BA");
+            status->is_wifi_connected = false;
+            break;
+        case CYW43_LINK_UP:
+            sprintf(status->wifi_state, "UP");
+            status->is_wifi_connected = true;
+            break;
+        default:
+            sprintf(status->wifi_state, "--");
+            status->is_wifi_connected = false;
+    }
+
+    status->wifi_state[2] = '\0';
+
     if (!mqtt_client_is_connected(client))
     {
         printf("Skipping publishing data. No Connection\n");
+        status->is_mqtt_connected = false;
+        status->is_publish_success = false;
         return;
+    } else {
+        status->is_mqtt_connected = true;
     }
+
     int length;
     err_t err;
 
@@ -50,6 +92,7 @@ void report_sensor_values_impl(sensor_values_t *values)
     if (err != ERR_OK)
     {
         printf("mqtt_publish return: %hhx\n", err);
+        status->is_publish_success = false;
         return;
     }
 
@@ -59,6 +102,7 @@ void report_sensor_values_impl(sensor_values_t *values)
     if (err != ERR_OK)
     {
         printf("mqtt_publish return: %hhx\n", err);
+        status->is_publish_success = false;
         return;
     }
 
@@ -68,8 +112,13 @@ void report_sensor_values_impl(sensor_values_t *values)
     if (err != ERR_OK)
     {
         printf("mqtt_publish return: %hhx\n", err);
+        status->is_publish_success = false;
         return;
     }
+
+    status->is_publish_success = !has_failed;
+
+    has_failed = false;
 }
 
 void init_sensor_reporter()
@@ -127,5 +176,7 @@ void publish_cb(void *arg, err_t err)
         printf("Publish datapoint 0x%08x success\n", datapoint);
         return;
     }
+
+    has_failed = true;
     printf("Publish datapoint 0x%08x result: %d\n", datapoint, err);
 }

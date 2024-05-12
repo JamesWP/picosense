@@ -50,6 +50,8 @@ GMG12864                                                <-> PiPico
 #include "stlcd.h"
 #include "glcd.h"
 #include "pins.h"
+#include <hardware/spi.h>
+#include <hardware/gpio.h>
 
 // JP: unused:?
 //uint8_t is_reversed = 0;
