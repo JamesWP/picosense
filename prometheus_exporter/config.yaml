@@ -1,0 +1,25 @@
+mqtt:
+  server: tcp://192.168.178.27:1883
+  client_id: mqtt_prometheus_exporter
+  topic_path: devices/+
+
+metrics:
+ - prom_name: humidity
+   mqtt_name: humidity
+   help: humidity reading
+   type: gauge
+   const_labels:
+    device_type: picosense
+ - prom_name: pressure
+   mqtt_name: pressure
+   help: pressure reading
+   type: gauge
+   const_labels:
+    device_type: picosense
+ - prom_name: temperature
+   mqtt_name: temperature
+   help: temperature reading
+   type: gauge
+   const_labels:
+    device_type: picosense
+ 
